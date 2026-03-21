@@ -3,8 +3,8 @@
    Base imports and font loading
    ============================================ */
 
-/* Google Fonts - Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Google Fonts - Gaming Theme */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One&display=swap');
 
 /* Base reset */
 * {
@@ -16,10 +16,11 @@
 /* Root element */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #030712;
   color: #f8fafc;
   min-height: 100vh;
@@ -36,7 +37,7 @@ body {
    ============================================ */
 
 [data-rk] {
-  --rk-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  --rk-font-family: 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   --rk-colors-accentColor: #6366f1 !important;
   --rk-colors-accentColorForeground: #ffffff !important;
   --rk-colors-modalBackground: #0f172a !important;
@@ -74,6 +75,25 @@ body {
   to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+}
+
 /* Utility classes */
 .spin {
   animation: spin 1s linear infinite;
@@ -95,6 +115,18 @@ body {
   animation: slideIn 0.3s ease-out;
 }
 
+.glitch {
+  animation: glitch 0.3s ease-in-out;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
 /* Glass morphism utility */
 .glass {
   background: rgba(15, 23, 42, 0.8);
@@ -113,4 +145,19 @@ body {
 
 .glow-warning {
   box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.glow-pink {
+  box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .spin, .pulse, .bounce, .fade-in, .slide-in, .glitch, .float, .glow {
+    animation: none;
+  }
 }
