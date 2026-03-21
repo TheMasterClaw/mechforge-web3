@@ -1,0 +1,27 @@
+{
+  "name": "mechforge-web3",
+  "version": "1.0.0",
+  "description": "MechForge - Web3 mech battling game with NFTs",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "contracts"
+  ],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "deploy:contracts": "cd contracts && npm run deploy:testnet",
+    "compile": "cd contracts && npm run compile",
+    "test": "cd contracts && npm test"
+  },
+  "keywords": [
+    "mechforge",
+    "web3",
+    "game",
+    "nft",
+    "ethereum",
+    "base"
+  ],
+  "author": "MechForge Team",
+  "license": "MIT"
+}

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gradSupport" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glowSupport" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:rgba(6,182,212,0.3)" />
+      <stop offset="100%" style="stop-color:transparent" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#0a0a1a"/>
+  <circle cx="256" cy="256" r="200" fill="url(#glowSupport)"/>
+  
+  <g transform="translate(256, 256)">
+    <!-- Round Body -->
+    <circle cx="0" cy="20" r="55" fill="url(#gradSupport)" stroke="#fff" stroke-width="2"/>
+    
+    <!-- Core Display -->
+    <circle cx="0" cy="20" r="30" fill="#0a0a1a" stroke="#06b6d4" stroke-width="2"/>
+    
+    <!-- Pulse -->
+    <circle cx="0" cy="20" r="15" fill="#06b6d4">
+      <animate attributeName="r" values="15;25;15" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Drone Bays -->
+    <rect x="-75" y="-10" width="20" height="40" rx="5" fill="#1a1a3e" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="55" y="-10" width="20" height="40" rx="5" fill="#1a1a3e" stroke="#06b6d4" stroke-width="2"/>
+    
+    <!-- Drones -->
+    <circle cx="-85" cy="-30" r="8" fill="#06b6d4">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-20; 0,0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="65" cy="-30" r="8" fill="#06b6d4">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-20; 0,0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Repair Arms -->
+    <rect x="-100" y="30" width="40" height="8" rx="4" fill="#1a1a3e" stroke="#06b6d4" stroke-width="1"/>
+    <rect x="60" y="30" width="40" height="8" rx="4" fill="#1a1a3e" stroke="#06b6d4" stroke-width="1"/>
+    
+    <!-- Tool Hands -->
+    <circle cx="-105" cy="34" r="8" fill="#06b6d4"/>
+    <circle cx="105" cy="34" r="8" fill="#06b6d4"/>
+    
+    
+    <!-- Dome Head -->
+    <path d="M -25,-60 A 25,25 0 0,1 25,-60 L 25,-40 L -25,-40 Z" fill="#1a1a3e" stroke="#06b6d4" stroke-width="2"/>
+    
+    <!-- Sensor Array -->
+    <rect x="-15" y="-55" width="8" height="8" rx="2" fill="#22c55e"/>
+    <rect x="7" y="-55" width="8" height="8" rx="2" fill="#22c55e"/>
+    
+    <!-- Medical Cross -->
+    <rect x="-8" y="-75" width="16" height="5" fill="#ef4444"/>
+    <rect x="-2.5" y="-80" width="5" height="16" fill="#ef4444"/>
+    
+    
+    <!-- Hover Base -->
+    <ellipse cx="0" cy="85" rx="40" ry="10" fill="#374151"/>
+    
+    <!-- Energy Ring -->
+    <ellipse cx="0" cy="85" rx="60" ry="15" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.5">
+      <animate attributeName="rx" values="60;70;60" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="15;20;15" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
+  <g transform="translate(20, 420)">
+    <rect width="120" height="70" rx="8" fill="rgba(0,0,0,0.6)" stroke="#06b6d4" stroke-width="1"/>
+    <text x="10" y="20" fill="#fff" font-family="Arial" font-size="12" font-weight="bold">Support Type</text>
+    <text x="10" y="40" fill="#06b6d4" font-family="Arial" font-size="10">💚 HEAL: 85</text>
+    <text x="10" y="55" fill="#22c55e" font-family="Arial" font-size="10">🔋 NRG: 156</text>
+  </g>
+  
+  <g transform="translate(432, 20)">
+    <rect width="70" height="24" rx="12" fill="rgba(156,163,175,0.2)" stroke="#9ca3af" stroke-width="1"/>
+    <text x="35" y="16" fill="#9ca3af" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle">COMMON</text>
+  </g>
+</svg>

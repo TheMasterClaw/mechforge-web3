@@ -1,0 +1,25 @@
+{
+  "name": "@mechforge/contracts",
+  "version": "1.0.0",
+  "description": "MechForge smart contracts",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network base-sepolia",
+    "verify": "hardhat verify --network base-sepolia"
+  },
+  "keywords": [
+    "mechforge",
+    "web3",
+    "solidity"
+  ],
+  "author": "MechForge Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "dotenv": "^16.4.0",
+    "hardhat": "^2.22.0"
+  }
+}

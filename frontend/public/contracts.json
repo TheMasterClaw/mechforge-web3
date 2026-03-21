@@ -1,0 +1,12 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "deployer": "0x0000000000000000000000000000000000000000",
+  "timestamp": "2025-03-21T12:00:00.000Z",
+  "contracts": {
+    "ForgeToken": null,
+    "MechNFT": null,
+    "BattleArena": null,
+    "StakingRewards": null
+  }
+}
