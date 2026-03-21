@@ -20,7 +20,9 @@ module.exports = {
     "base-sepolia": {
       url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 84532
+      chainId: 84532,
+      gasPrice: 2000000000,
+      gas: 5000000
     }
   },
   etherscan: {

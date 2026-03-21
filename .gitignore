@@ -1,1 +1,14 @@
-.gitnexus
+node_modules/
+.env
+.env.local
+.cache/
+dist/
+coverage/
+artifacts/
+cache/
+typechain-types/
+*.log
+.DS_Store
+.vscode/
+.idea/
+.vercel

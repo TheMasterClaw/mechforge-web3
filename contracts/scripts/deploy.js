@@ -2,6 +2,9 @@ const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 
+// Helper to add delay between transactions
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function main() {
   console.log("🚀 Deploying MechForge contracts to Base Sepolia...\n");
 
@@ -16,6 +19,7 @@ async function main() {
   await forgeToken.waitForDeployment();
   const forgeTokenAddress = await forgeToken.getAddress();
   console.log("✅ ForgeToken deployed to:", forgeTokenAddress);
+  await delay(3000);
 
   // Deploy MechNFT
   console.log("\n📦 Deploying MechNFT...");
@@ -24,6 +28,7 @@ async function main() {
   await mechNFT.waitForDeployment();
   const mechNFTAddress = await mechNFT.getAddress();
   console.log("✅ MechNFT deployed to:", mechNFTAddress);
+  await delay(3000);
 
   // Deploy BattleArena
   console.log("\n📦 Deploying BattleArena...");
@@ -32,6 +37,7 @@ async function main() {
   await battleArena.waitForDeployment();
   const battleArenaAddress = await battleArena.getAddress();
   console.log("✅ BattleArena deployed to:", battleArenaAddress);
+  await delay(3000);
 
   // Deploy StakingRewards
   console.log("\n📦 Deploying StakingRewards...");
@@ -40,18 +46,22 @@ async function main() {
   await stakingRewards.waitForDeployment();
   const stakingRewardsAddress = await stakingRewards.getAddress();
   console.log("✅ StakingRewards deployed to:", stakingRewardsAddress);
+  await delay(3000);
 
   // Authorize contracts
   console.log("\n🔐 Setting up permissions...");
   
   await (await mechNFT.authorizeMinter(battleArenaAddress)).wait();
   console.log("✅ BattleArena authorized as minter on MechNFT");
+  await delay(2000);
   
   await (await mechNFT.authorizeMinter(stakingRewardsAddress)).wait();
   console.log("✅ StakingRewards authorized as minter on MechNFT");
+  await delay(2000);
   
   await (await forgeToken.addMinter(deployer.address)).wait();
   console.log("✅ Deployer added as ForgeToken minter");
+  await delay(2000);
   
   // Fund staking contract with initial rewards
   console.log("\n💰 Funding StakingRewards with initial reward tokens...");

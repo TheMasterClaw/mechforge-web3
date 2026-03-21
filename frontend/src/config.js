@@ -2,6 +2,38 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { baseSepolia } from 'wagmi/chains';
 import { http } from 'wagmi';
 
+// Contract addresses - will be updated after deployment
+export const CONTRACTS = {
+  baseSepolia: {
+    MechNFT: null,
+    BattleArena: null,
+    StakingRewards: null,
+    ForgeToken: null
+  }
+};
+
+// Load deployed contracts if available
+const loadContracts = async () => {
+  try {
+    const response = await fetch('/contracts.json');
+    if (response.ok) {
+      const data = await response.json();
+      if (data.contracts) {
+        CONTRACTS.baseSepolia.MechNFT = data.contracts.MechNFT;
+        CONTRACTS.baseSepolia.BattleArena = data.contracts.BattleArena;
+        CONTRACTS.baseSepolia.StakingRewards = data.contracts.StakingRewards;
+        CONTRACTS.baseSepolia.ForgeToken = data.contracts.ForgeToken;
+        console.log('Loaded contract addresses:', CONTRACTS.baseSepolia);
+      }
+    }
+  } catch (e) {
+    console.log('No deployed contracts found, using placeholders');
+  }
+};
+
+// Load contracts immediately
+loadContracts();
+
 export const config = getDefaultConfig({
   appName: 'MechForge',
   projectId: 'mechforge-web3-game',
@@ -117,7 +149,7 @@ export const BATTLE_ARENA_ABI = [
         {"internalType": "uint256", "name": "defenderMechId", "type": "uint256"},
         {"internalType": "uint256", "name": "stakeAmount", "type": "uint256"},
         {"internalType": "uint256", "name": "startTime", "type": "uint256"},
-        {"internalType": "enum BattleArena.BattleStatus", "name": "status", "type": "uint8"},
+        {"internalType": "uint8", "name": "status", "type": "uint8"},
         {"internalType": "address", "name": "winner", "type": "address"},
         {"internalType": "uint256[]", "name": "roundResults", "type": "uint256[]"}
       ],
@@ -153,7 +185,7 @@ export const BATTLE_ARENA_ABI = [
         {"internalType": "uint256", "name": "defenderMechId", "type": "uint256"},
         {"internalType": "uint256", "name": "stakeAmount", "type": "uint256"},
         {"internalType": "uint256", "name": "startTime", "type": "uint256"},
-        {"internalType": "enum BattleArena.BattleStatus", "name": "status", "type": "uint8"},
+        {"internalType": "uint8", "name": "status", "type": "uint8"},
         {"internalType": "address", "name": "winner", "type": "address"},
         {"internalType": "uint256[]", "name": "roundResults", "type": "uint256[]"}
       ],
@@ -196,8 +228,22 @@ export const STAKING_REWARDS_ABI = [
     "type": "function"
   },
   {
+    "inputs": [{"internalType": "uint256[]", "name": "mechIds", "type": "uint256[]"}],
+    "name": "unstakeBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [{"internalType": "uint256", "name": "mechId", "type": "uint256"}],
     "name": "claimRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256[]", "name": "mechIds", "type": "uint256[]"}],
+    "name": "claimRewardsBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -275,29 +321,3 @@ export const FORGE_TOKEN_ABI = [
     "type": "function"
   }
 ];
-
-// Contract addresses - will be updated after deployment
-export const CONTRACTS = {
-  baseSepolia: {
-    MechNFT: null,      // Will be filled after deployment
-    BattleArena: null,
-    StakingRewards: null,
-    ForgeToken: null
-  }
-};
-
-// Load deployed contracts if available
-try {
-  const response = await fetch('/contracts.json');
-  if (response.ok) {
-    const data = await response.json();
-    if (data.contracts) {
-      CONTRACTS.baseSepolia.MechNFT = data.contracts.MechNFT;
-      CONTRACTS.baseSepolia.BattleArena = data.contracts.BattleArena;
-      CONTRACTS.baseSepolia.StakingRewards = data.contracts.StakingRewards;
-      CONTRACTS.baseSepolia.ForgeToken = data.contracts.ForgeToken;
-    }
-  }
-} catch (e) {
-  console.log('No deployed contracts found, using placeholders');
-}

@@ -2,8 +2,8 @@ import { RainbowKitProvider, ConnectButton } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { config } from './config';
-import { useState } from 'react';
-import { Swords, Shield, Coins, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Swords, Shield, Coins, Sparkles, Menu, X } from 'lucide-react';
 import '@rainbow-me/rainbowkit/styles.css';
 import './App.css';
 
@@ -16,6 +16,33 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState('collection');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Listen for tab change events from components
+  useEffect(() => {
+    const handleSetTab = (e) => {
+      setActiveTab(e.detail);
+    };
+    window.addEventListener('setTab', handleSetTab);
+    return () => window.removeEventListener('setTab', handleSetTab);
+  }, []);
+
+  const tabs = [
+    { id: 'collection', label: 'Collection', icon: Shield },
+    { id: 'battle', label: 'Battle Arena', icon: Swords },
+    { id: 'staking', label: 'Staking', icon: Coins },
+    { id: 'mint', label: 'Mint Mech', icon: Sparkles },
+  ];
 
   const renderTab = () => {
     switch (activeTab) {
@@ -32,6 +59,11 @@ function AppContent() {
     }
   };
 
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -39,34 +71,47 @@ function AppContent() {
           <Swords size={32} />
           <h1>MechForge</h1>
         </div>
-        <nav className="nav">
-          <button
-            className={activeTab === 'collection' ? 'active' : ''}
-            onClick={() => setActiveTab('collection')}
-          >
-            <Shield size={18} /> Collection
-          </button>
-          <button
-            className={activeTab === 'battle' ? 'active' : ''}
-            onClick={() => setActiveTab('battle')}
-          >
-            <Swords size={18} /> Battle Arena
-          </button>
-          <button
-            className={activeTab === 'staking' ? 'active' : ''}
-            onClick={() => setActiveTab('staking')}
-          >
-            <Coins size={18} /> Staking
-          </button>
-          <button
-            className={activeTab === 'mint' ? 'active' : ''}
-            onClick={() => setActiveTab('mint')}
-          >
-            <Sparkles size={18} /> Mint Mech
-          </button>
+        
+        {/* Desktop Navigation */}
+        <nav className="nav desktop-nav">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={activeTab === tab.id ? 'active' : ''}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              <tab.icon size={18} /> {tab.label}
+            </button>
+          ))}
         </nav>
-        <ConnectButton />
+
+        {/* Mobile Menu Button */}
+        <div className="mobile-controls">
+          <ConnectButton />
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </header>
+
+      {/* Mobile Navigation */}
+      {mobileMenuOpen && (
+        <nav className="mobile-nav">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={activeTab === tab.id ? 'active' : ''}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              <tab.icon size={18} /> {tab.label}
+            </button>
+          ))}
+        </nav>
+      )}
       
       <main className="main-content">
         {renderTab()}
@@ -74,6 +119,9 @@ function AppContent() {
       
       <footer className="footer">
         <p>MechForge - Battle, Collect, Earn on Base Sepolia</p>
+        <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', opacity: 0.7 }}>
+          Contracts deployed on Base Sepolia Testnet
+        </p>
       </footer>
     </div>
   );
