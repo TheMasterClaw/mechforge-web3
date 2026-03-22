@@ -44,7 +44,7 @@ export default function Hero({ onEnterApp }) {
           </span>
         </h1>
 
-        <p className="hero-subtitle">
+        <p className="hero-subtitle" style={{ color: '#ffffff', fontSize: '1.25rem', maxWidth: '600px', margin: '0 auto 2rem', lineHeight: '1.6' }}>
           Mint unique mech NFTs, battle other players in intense PvP combat, 
           and earn FORGE tokens in the ultimate Web3 mech battling game.
         </p>
@@ -68,22 +68,22 @@ export default function Hero({ onEnterApp }) {
           </button>
         </div>
 
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <div className="hero-stat-value">10K+</div>
-            <div className="hero-stat-label">Mechs Minted</div>
+        <div className="hero-stats" style={{ display: 'flex', justifyContent: 'center', gap: '3rem', marginTop: '3rem', flexWrap: 'wrap' }}>
+          <div className="hero-stat" style={{ textAlign: 'center' }}>
+            <div className="hero-stat-value" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#00d4ff' }}>10K+</div>
+            <div className="hero-stat-label" style={{ color: '#ffffff', fontSize: '0.875rem', marginTop: '0.5rem' }}>Mechs Minted</div>
           </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">50K+</div>
-            <div className="hero-stat-label">Battles</div>
+          <div className="hero-stat" style={{ textAlign: 'center' }}>
+            <div className="hero-stat-value" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#00d4ff' }}>50K+</div>
+            <div className="hero-stat-label" style={{ color: '#ffffff', fontSize: '0.875rem', marginTop: '0.5rem' }}>Battles</div>
           </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">5K+</div>
-            <div className="hero-stat-label">Players</div>
+          <div className="hero-stat" style={{ textAlign: 'center' }}>
+            <div className="hero-stat-value" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#00d4ff' }}>5K+</div>
+            <div className="hero-stat-label" style={{ color: '#ffffff', fontSize: '0.875rem', marginTop: '0.5rem' }}>Players</div>
           </div>
-          <div className="hero-stat">
-            <div className="hero-stat-value">125%</div>
-            <div className="hero-stat-label">APR</div>
+          <div className="hero-stat" style={{ textAlign: 'center' }}>
+            <div className="hero-stat-value" style={{ fontSize: '2rem', fontWeight: 'bold', color: '#00d4ff' }}>125%</div>
+            <div className="hero-stat-label" style={{ color: '#ffffff', fontSize: '0.875rem', marginTop: '0.5rem' }}>APR</div>
           </div>
         </div>
       </div>
