@@ -2,17 +2,18 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { baseSepolia } from 'wagmi/chains';
 import { http } from 'wagmi';
 
-// Contract addresses - will be updated after deployment
+// Contract addresses - deployed on Base Sepolia
+// Loaded from contracts.json for consistency
 export const CONTRACTS = {
   baseSepolia: {
-    MechNFT: null,
-    BattleArena: null,
-    StakingRewards: null,
-    ForgeToken: null
+    MechNFT: '0x37921bf54dD7071419E30074DFaf0fE7c357d6bC',
+    BattleArena: '0xe8F45785b5D31098B3014c17A11A8C0a52326B8F',
+    StakingRewards: '0x609bDcB1B8940793604Bf36C976B7CCf45941C55',
+    ForgeToken: '0xECF2b91dcC6ec039c25c86B1235E80e609648dFA'
   }
 };
 
-// Load deployed contracts if available
+// Try to refresh contract addresses from contracts.json (for development)
 const loadContracts = async () => {
   try {
     const response = await fetch('/contracts.json');
@@ -23,15 +24,15 @@ const loadContracts = async () => {
         CONTRACTS.baseSepolia.BattleArena = data.contracts.BattleArena;
         CONTRACTS.baseSepolia.StakingRewards = data.contracts.StakingRewards;
         CONTRACTS.baseSepolia.ForgeToken = data.contracts.ForgeToken;
-        console.log('Loaded contract addresses:', CONTRACTS.baseSepolia);
+        console.log('Updated contract addresses from contracts.json:', CONTRACTS.baseSepolia);
       }
     }
   } catch (e) {
-    console.log('No deployed contracts found, using placeholders');
+    console.log('Using hardcoded contract addresses');
   }
 };
 
-// Load contracts immediately
+// Load contracts in background (for hot reloads during development)
 loadContracts();
 
 export const config = getDefaultConfig({

@@ -1,0 +1,76 @@
+{
+  "passed": 11,
+  "failed": 3,
+  "tests": [
+    {
+      "name": "Landing page loads",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "Landing page screenshot",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "Hero title visible",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "CTA button visible",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "name": "Hero title high contrast",
+      "status": "FAIL",
+      "details": "Color: rgb(248, 250, 252)"
+    },
+    {
+      "name": "Text styles retrieved",
+      "status": "PASS",
+      "details": "5 buttons analyzed"
+    },
+    {
+      "name": "Navigation to collection",
+      "status": "PASS",
+      "details": "http://localhost:5173/"
+    },
+    {
+      "name": "Collection page loads",
+      "status": "PASS",
+      "details": "Wallet connection required"
+    },
+    {
+      "name": "Battle arena loads",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "Staking page loads",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "Mint page loads",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "name": "Price display visible",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "name": "Mobile responsive",
+      "status": "PASS",
+      "details": "Layout adapts to mobile"
+    },
+    {
+      "name": "Dark theme active",
+      "status": "PASS",
+      "details": "BG: rgb(3, 7, 18)"
+    }
+  ]
+}

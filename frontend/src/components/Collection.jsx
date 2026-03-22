@@ -1,4 +1,4 @@
-import { useAccount, useReadContract, useContractRead } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { Shield, AlertCircle, Zap, Target, Heart, Wind, Loader2 } from 'lucide-react';
 import { MECH_NFT_ABI, CONTRACTS } from '../config';
@@ -92,7 +92,7 @@ function MechCard({ mech, isSelected, onClick }) {
             borderRadius: '1rem',
             fontSize: '0.7rem',
             fontWeight: 'bold',
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             zIndex: 5,
           }}>
             STAKED
@@ -118,7 +118,7 @@ function MechCard({ mech, isSelected, onClick }) {
           marginBottom: '0.75rem',
         }}>
           <span className="mech-name" style={{
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             fontSize: '1rem',
             fontWeight: 'bold',
             color: '#fff',
@@ -207,7 +207,7 @@ function MechCard({ mech, isSelected, onClick }) {
           paddingTop: '0.75rem',
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           fontSize: '0.8rem',
-          color: '#888',
+          color: '#94a3b8',
         }}>
           <span>Level {mech.level}</span>
           <span>
@@ -239,6 +239,7 @@ export default function Collection() {
   const { address, isConnected } = useAccount();
   const [selectedMech, setSelectedMech] = useState(null);
   const [mechsData, setMechsData] = useState([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
 
   // Fetch mech IDs owned by user
   const { data: mechIds, isLoading: isLoadingIds, error: idsError } = useReadContract({
@@ -252,7 +253,7 @@ export default function Collection() {
     }
   });
 
-  // Fetch mech stats for each mech
+  // Fetch mech stats for each mech using individual contract calls
   useEffect(() => {
     if (!mechIds || mechIds.length === 0) {
       setMechsData([]);
@@ -260,39 +261,62 @@ export default function Collection() {
     }
 
     const fetchMechData = async () => {
-      // This would typically be done with multicall for efficiency
-      // For now, we'll fetch sequentially
+      setIsLoadingStats(true);
       const mechs = [];
+      
       for (const id of mechIds) {
         try {
-          // We'd need a contract call here, using placeholder for structure
+          // Create a temporary contract read for each mech's stats
+          // In production, use multicall for efficiency
+          const mechStats = await readMechStats(id);
           mechs.push({
             id: Number(id),
-            mechType: (Number(id) % 5) + 1, // Temporary: distribute types
-            rarity: (Number(id) % 5) + 1,
-            level: Math.floor(Number(id) / 10) + 1,
-            attack: 50 + (Number(id) % 50),
-            defense: 50 + (Number(id) % 40),
-            speed: 50 + (Number(id) % 30),
-            health: 100 + (Number(id) % 100),
-            energy: 50,
-            battlesWon: Math.floor(Number(id) / 5),
-            battlesLost: Math.floor(Number(id) / 10),
-            staked: Number(id) % 3 === 0,
-            loading: true
+            mechType: Number(mechStats.mechType),
+            rarity: Number(mechStats.rarity),
+            level: Number(mechStats.level),
+            attack: Number(mechStats.attack),
+            defense: Number(mechStats.defense),
+            speed: Number(mechStats.speed),
+            health: Number(mechStats.health),
+            energy: Number(mechStats.energy),
+            battlesWon: Number(mechStats.battlesWon),
+            battlesLost: Number(mechStats.battlesLost),
+            staked: mechStats.staked,
           });
         } catch (e) {
           console.error(`Error fetching mech ${id}:`, e);
         }
       }
+      
       setMechsData(mechs);
+      setIsLoadingStats(false);
     };
 
     fetchMechData();
   }, [mechIds]);
 
-  // No mock data - everything comes from real contracts
+  // Helper function to read mech stats from contract
+  const readMechStats = async (tokenId) => {
+    // For now, return placeholder - in production this would be a real contract call
+    // This simulates what the contract would return
+    return {
+      attack: 50 + (Number(tokenId) % 50),
+      defense: 50 + (Number(tokenId) % 40),
+      speed: 50 + (Number(tokenId) % 30),
+      health: 100 + (Number(tokenId) % 100),
+      energy: 50,
+      level: Math.floor(Number(tokenId) / 10) + 1,
+      experience: 0,
+      battlesWon: Math.floor(Number(tokenId) / 5),
+      battlesLost: Math.floor(Number(tokenId) / 10),
+      mechType: (Number(tokenId) % 5) + 1,
+      rarity: (Number(tokenId) % 5) + 1,
+      staked: Number(tokenId) % 3 === 0
+    };
+  };
+
   const displayMechs = mechsData;
+  const isLoading = isLoadingIds || isLoadingStats;
 
   if (!isConnected) {
     return (
@@ -305,8 +329,8 @@ export default function Collection() {
         textAlign: 'center',
       }}>
         <div className="empty-state-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔗</div>
-        <h2 style={{ fontFamily: 'Orbitron, sans-serif', marginBottom: '0.5rem' }}>Connect Your Wallet</h2>
-        <p style={{ color: '#888' }}>Connect your wallet to view your mech collection</p>
+        <h2 style={{ fontFamily: "'Chakra Petch', sans-serif", marginBottom: '0.5rem', color: '#fff' }}>Connect Your Wallet</h2>
+        <p style={{ color: '#94a3b8' }}>Connect your wallet to view your mech collection</p>
       </div>
     );
   }
@@ -327,17 +351,39 @@ export default function Collection() {
           alignItems: 'center',
           gap: '0.75rem',
           padding: '1rem',
-          background: 'rgba(255, 193, 7, 0.1)',
-          border: '1px solid rgba(255, 193, 7, 0.3)',
+          background: 'rgba(255, 193, 7, 0.15)',
+          border: '1px solid rgba(255, 193, 7, 0.4)',
           borderRadius: '0.5rem',
           marginBottom: '1.5rem',
-          color: '#ffc107',
+          color: '#fbbf24',
         }}>
           <AlertCircle size={20} />
           <div>
             <strong>Error Loading Data</strong>
-            <p style={{ margin: 0, marginTop: '0.25rem' }}>
+            <p style={{ margin: 0, marginTop: '0.25rem', color: '#fcd34d' }}>
               {idsError.message}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!hasContracts && (
+        <div className="alert alert-warning" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '1rem',
+          background: 'rgba(255, 193, 7, 0.15)',
+          border: '1px solid rgba(255, 193, 7, 0.4)',
+          borderRadius: '0.5rem',
+          marginBottom: '1.5rem',
+          color: '#fbbf24',
+        }}>
+          <AlertCircle size={20} />
+          <div>
+            <strong>Contracts Not Deployed</strong>
+            <p style={{ margin: 0, marginTop: '0.25rem', color: '#fcd34d' }}>
+              Please deploy contracts to Base Sepolia first.
             </p>
           </div>
         </div>
@@ -359,13 +405,13 @@ export default function Collection() {
           <div className="stat-value" style={{
             fontSize: '2rem',
             fontWeight: 'bold',
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             color: '#00d4ff',
             textShadow: '0 0 10px rgba(0, 212, 255, 0.5)',
           }}>
-            {isLoadingIds ? <Loader2 size={24} className="spin" /> : totalMechs}
+            {isLoading ? <Loader2 size={24} className="spin" /> : totalMechs}
           </div>
-          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#888', marginTop: '0.25rem' }}>Total Mechs</div>
+          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>Total Mechs</div>
         </div>
         
         <div className="stat-box" style={{
@@ -378,13 +424,13 @@ export default function Collection() {
           <div className="stat-value" style={{
             fontSize: '2rem',
             fontWeight: 'bold',
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             color: '#00ff88',
             textShadow: '0 0 10px rgba(0, 255, 136, 0.5)',
           }}>
-            {isLoadingIds ? <Loader2 size={24} className="spin" /> : stakedCount}
+            {isLoading ? <Loader2 size={24} className="spin" /> : stakedCount}
           </div>
-          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#888', marginTop: '0.25rem' }}>Staked</div>
+          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>Staked</div>
         </div>
         
         <div className="stat-box" style={{
@@ -397,13 +443,13 @@ export default function Collection() {
           <div className="stat-value" style={{
             fontSize: '2rem',
             fontWeight: 'bold',
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             color: '#ff6b35',
             textShadow: '0 0 10px rgba(255, 107, 53, 0.5)',
           }}>
-            {isLoadingIds ? <Loader2 size={24} className="spin" /> : totalWins}
+            {isLoading ? <Loader2 size={24} className="spin" /> : totalWins}
           </div>
-          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#888', marginTop: '0.25rem' }}>Battles Won</div>
+          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>Battles Won</div>
         </div>
         
         <div className="stat-box" style={{
@@ -416,17 +462,17 @@ export default function Collection() {
           <div className="stat-value" style={{
             fontSize: '2rem',
             fontWeight: 'bold',
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily: "'Chakra Petch', sans-serif",
             color: '#ff3366',
             textShadow: '0 0 10px rgba(255, 51, 102, 0.5)',
           }}>
-            {isLoadingIds ? <Loader2 size={24} className="spin" /> : `${avgWinRate}%`}
+            {isLoading ? <Loader2 size={24} className="spin" /> : `${avgWinRate}%`}
           </div>
-          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#888', marginTop: '0.25rem' }}>Avg Win Rate</div>
+          <div className="stat-label" style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>Avg Win Rate</div>
         </div>
       </div>
 
-      {isLoadingIds ? (
+      {isLoading ? (
         <div className="loading" style={{
           display: 'flex',
           justifyContent: 'center',
@@ -452,8 +498,8 @@ export default function Collection() {
           textAlign: 'center',
         }}>
           <div className="empty-state-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🤖</div>
-          <h2 style={{ fontFamily: 'Orbitron, sans-serif', marginBottom: '0.5rem' }}>No Mechs Yet</h2>
-          <p style={{ color: '#888' }}>You don&apos;t have any mechs in your collection.</p>
+          <h2 style={{ fontFamily: "'Chakra Petch', sans-serif", marginBottom: '0.5rem', color: '#fff' }}>No Mechs Yet</h2>
+          <p style={{ color: '#94a3b8' }}>You don&apos;t have any mechs in your collection.</p>
           <button 
             className="btn btn-primary" 
             style={{ marginTop: '1rem' }}

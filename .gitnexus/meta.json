@@ -1,12 +1,12 @@
 {
   "repoPath": "/home/holyspirit/.openclaw/repos/mechforge-web3",
-  "lastCommit": "ca0c52eb105f5fd53cea43f3a936a76fa438c885",
-  "indexedAt": "2026-03-21T19:23:18.480Z",
+  "lastCommit": "d2f9a594739eb939396ded72db473659959fba47",
+  "indexedAt": "2026-03-22T10:21:58.875Z",
   "stats": {
-    "files": 82,
-    "nodes": 158,
-    "edges": 195,
-    "communities": 6,
+    "files": 45,
+    "nodes": 117,
+    "edges": 164,
+    "communities": 8,
     "processes": 0,
     "embeddings": 0
   }

@@ -96,10 +96,10 @@ export default function Hero({ onEnterApp }) {
           bottom: '2rem',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(255,255,255,0.1)',
-          border: '1px solid rgba(255,255,255,0.2)',
+          background: 'rgba(0, 212, 255, 0.15)',
+          border: '1px solid rgba(0, 212, 255, 0.4)',
           borderRadius: '8px',
-          color: '#ffffff',
+          color: '#00d4ff',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
@@ -107,10 +107,11 @@ export default function Hero({ onEnterApp }) {
           gap: '0.5rem',
           animation: 'bounce 2s infinite',
           padding: '0.75rem 1.5rem',
+          fontWeight: '600',
         }}
         aria-label="Scroll to features"
       >
-        <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '600' }}>
+        <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           Discover More
         </span>
         <ChevronDown size={24} />

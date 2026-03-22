@@ -9,7 +9,8 @@ const MECH_TYPES = ['', '⚔️', '🛡️', '🚀', '🎯', '💚'];
 export default function Staking() {
   const { address, isConnected } = useAccount();
   const [selectedStakedMech, setSelectedStakedMech] = useState(null);
-  const [isDataReady, setIsDataReady] = useState(false);
+  
+  const hasContracts = !!CONTRACTS.baseSepolia.StakingRewards && !!CONTRACTS.baseSepolia.MechNFT;
 
   // Fetch user's staked mechs
   const { data: userStakes, isLoading: isLoadingStakes } = useReadContract({
@@ -125,10 +126,10 @@ export default function Staking() {
 
   if (!isConnected) {
     return (
-      <div className="empty-state">
-        <div className="empty-state-icon">🔗</div>
-        <h2>Connect Your Wallet</h2>
-        <p>Connect your wallet to stake your mechs and earn rewards</p>
+      <div className="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
+        <div className="empty-state-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔗</div>
+        <h2 style={{ color: '#fff', marginBottom: '0.5rem' }}>Connect Your Wallet</h2>
+        <p style={{ color: '#94a3b8' }}>Connect your wallet to stake your mechs and earn rewards</p>
       </div>
     );
   }
@@ -138,12 +139,22 @@ export default function Staking() {
   return (
     <div>
       {!hasContracts && (
-        <div className="alert alert-info">
+        <div className="alert alert-warning" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '1rem',
+          background: 'rgba(255, 193, 7, 0.15)',
+          border: '1px solid rgba(255, 193, 7, 0.4)',
+          borderRadius: '0.5rem',
+          marginBottom: '1.5rem',
+          color: '#fbbf24',
+        }}>
           <AlertCircle size={20} />
           <div>
-            <strong>Demo Mode</strong>
-            <p style={{ margin: 0, marginTop: '0.25rem' }}>
-              Showing example staking data. Deploy contracts to stake for real rewards.
+            <strong>Contracts Not Deployed</strong>
+            <p style={{ margin: 0, marginTop: '0.25rem', color: '#fcd34d' }}>
+              Please deploy contracts to stake for real rewards.
             </p>
           </div>
         </div>

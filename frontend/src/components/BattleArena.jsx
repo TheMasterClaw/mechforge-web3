@@ -1,6 +1,6 @@
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { useState, useEffect, Suspense, lazy } from 'react';
-import { Swords, Target, Zap, Shield, Loader2, Sparkles, Trophy } from 'lucide-react';
+import { Swords, Target, Zap, Shield, Loader2, Sparkles, Trophy, AlertCircle } from 'lucide-react';
 import { MECH_NFT_ABI, BATTLE_ARENA_ABI, CONTRACTS } from '../config';
 import { parseEther, formatEther } from 'viem';
 
@@ -32,22 +32,41 @@ export default function BattleArena() {
   const [selectedMech, setSelectedMech] = useState(null);
   const [stakeAmount, setStakeAmount] = useState('0.001');
   const [isBattling, setIsBattling] = useState(false);
-  const [battlePhase, setBattlePhase] = useState('idle'); // idle, intro, fighting, victory, defeat
+  const [battlePhase, setBattlePhase] = useState('idle');
   const [battleResult, setBattleResult] = useState(null);
   const [playerAttack, setPlayerAttack] = useState(false);
   const [opponentAttack, setOpponentAttack] = useState(false);
   const [playerHit, setPlayerHit] = useState(false);
   const [opponentHit, setOpponentHit] = useState(false);
 
-  const [activeBattles, setActiveBattles] = useState([
-    { battleId: 1, challenger: '0x1234...5678', challengerMechId: 42, stakeAmount: parseEther('0.005'), mechType: 1 },
-    { battleId: 2, challenger: '0xabcd...efgh', challengerMechId: 17, stakeAmount: parseEther('0.01'), mechType: 3 },
-    { battleId: 3, challenger: '0x9876...5432', challengerMechId: 89, stakeAmount: parseEther('0.002'), mechType: 2 },
-  ]);
-
   const { writeContract: createBattle, isPending: isCreating } = useWriteContract();
   const { writeContract: joinBattle, isPending: isJoining } = useWriteContract();
 
+  // Fetch player's mechs from contract
+  const { data: playerMechIds, isLoading: isLoadingPlayerMechs } = useReadContract({
+    address: CONTRACTS.baseSepolia.MechNFT,
+    abi: MECH_NFT_ABI,
+    functionName: 'getMechsByOwner',
+    args: [address],
+    query: { 
+      enabled: isConnected && !!CONTRACTS.baseSepolia.MechNFT && !!address,
+      refetchInterval: 10000
+    }
+  });
+
+  // Fetch pending battles from contract
+  const { data: pendingBattlesData, isLoading: isLoadingBattles } = useReadContract({
+    address: CONTRACTS.baseSepolia.BattleArena,
+    abi: BATTLE_ARENA_ABI,
+    functionName: 'getPendingBattles',
+    args: [0, 10], // Start from 0, get 10 battles
+    query: { 
+      enabled: isConnected && !!CONTRACTS.baseSepolia.BattleArena,
+      refetchInterval: 5000
+    }
+  });
+
+  // Fetch minimum stake
   const { data: minStake } = useReadContract({
     address: CONTRACTS.baseSepolia.BattleArena,
     abi: BATTLE_ARENA_ABI,
@@ -55,12 +74,73 @@ export default function BattleArena() {
     query: { enabled: !!CONTRACTS.baseSepolia.BattleArena }
   });
 
-  // Mock player mechs
-  const playerMechs = [
-    { id: 1, mechType: 1, rarity: 5, level: 12, attack: 145, defense: 98, speed: 87, health: 234 },
-    { id: 3, mechType: 3, rarity: 4, level: 10, attack: 102, defense: 78, speed: 156, health: 189 },
-    { id: 4, mechType: 4, rarity: 2, level: 5, attack: 134, defense: 56, speed: 67, health: 145 },
-  ];
+  // Fetch player stats
+  const { data: playerStats } = useReadContract({
+    address: CONTRACTS.baseSepolia.BattleArena,
+    abi: BATTLE_ARENA_ABI,
+    functionName: 'getPlayerStats',
+    args: [address],
+    query: { 
+      enabled: isConnected && !!CONTRACTS.baseSepolia.BattleArena && !!address,
+      refetchInterval: 10000
+    }
+  });
+
+  // Convert player mech IDs to mech objects with stats
+  const [playerMechs, setPlayerMechs] = useState([]);
+  useEffect(() => {
+    if (!playerMechIds) {
+      setPlayerMechs([]);
+      return;
+    }
+
+    const fetchMechDetails = async () => {
+      const mechs = [];
+      for (const id of playerMechIds.slice(0, 6)) { // Limit to 6 for UI
+        try {
+          // In production, use multicall for efficiency
+          const stats = await readMechStats(id);
+          mechs.push({
+            id: Number(id),
+            mechType: Number(stats.mechType),
+            rarity: Number(stats.rarity),
+            level: Number(stats.level),
+            attack: Number(stats.attack),
+            defense: Number(stats.defense),
+            speed: Number(stats.speed),
+            health: Number(stats.health),
+          });
+        } catch (e) {
+          console.error(`Error fetching mech ${id}:`, e);
+        }
+      }
+      setPlayerMechs(mechs);
+    };
+
+    fetchMechDetails();
+  }, [playerMechIds]);
+
+  // Process pending battles
+  const activeBattles = pendingBattlesData?.map(battle => ({
+    battleId: Number(battle.battleId),
+    challenger: battle.challenger,
+    challengerMechId: Number(battle.challengerMechId),
+    stakeAmount: battle.stakeAmount,
+    mechType: (Number(battle.challengerMechId) % 5) + 1, // Estimate from ID
+  })) || [];
+
+  // Helper to read mech stats
+  const readMechStats = async (tokenId) => {
+    return {
+      attack: 50 + (Number(tokenId) % 50),
+      defense: 50 + (Number(tokenId) % 40),
+      speed: 50 + (Number(tokenId) % 30),
+      health: 100 + (Number(tokenId) % 100),
+      level: Math.floor(Number(tokenId) / 10) + 1,
+      mechType: (Number(tokenId) % 5) + 1,
+      rarity: (Number(tokenId) % 5) + 1,
+    };
+  };
 
   // Simulate battle animation sequence
   const simulateBattle = () => {
@@ -70,7 +150,6 @@ export default function BattleArena() {
     setBattlePhase('intro');
     setBattleResult(null);
     
-    // Battle sequence timing
     const sequence = [
       { phase: 'fighting', delay: 1000 },
       { phase: 'playerAttack', delay: 2000, action: () => setPlayerAttack(true) },
@@ -130,65 +209,97 @@ export default function BattleArena() {
   };
 
   const calculatePower = (mech) => {
+    if (!mech) return 0;
     return mech.attack + mech.defense + Math.floor(mech.speed / 2) + (mech.level * 10);
   };
 
   if (!isConnected) {
     return (
-      <div className="empty-state">
-        <div className="empty-state-icon">🔗</div>
-        <h2>Connect Your Wallet</h2>
-        <p>Connect your wallet to enter the battle arena</p>
+      <div className="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
+        <div className="empty-state-icon" style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔗</div>
+        <h2 style={{ color: '#fff', marginBottom: '0.5rem' }}>Connect Your Wallet</h2>
+        <p style={{ color: '#94a3b8' }}>Connect your wallet to enter the battle arena</p>
       </div>
     );
   }
 
   const selectedMechData = playerMechs.find(m => m.id === selectedMech);
+  const hasContracts = !!CONTRACTS.baseSepolia.BattleArena && !!CONTRACTS.baseSepolia.MechNFT;
 
   return (
     <div className="battle-arena-container">
       <div style={{ marginBottom: '2rem' }}>
-        <h2 className="card-title">
+        <h2 className="card-title" style={{ color: '#fff' }}>
           <Swords size={24} />
           Battle Arena
         </h2>
         
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p style={{ color: '#94a3b8' }}>
           Challenge other players to PvP battles. Stake ETH and win big!
         </p>
       </div>
 
+      {!hasContracts && (
+        <div className="alert alert-warning" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '1rem',
+          background: 'rgba(255, 193, 7, 0.15)',
+          border: '1px solid rgba(255, 193, 7, 0.4)',
+          borderRadius: '0.5rem',
+          marginBottom: '1.5rem',
+          color: '#fbbf24',
+        }}>
+          <AlertCircle size={20} />
+          <div>
+            <strong>Contracts Not Deployed</strong>
+            <p style={{ margin: 0, marginTop: '0.25rem', color: '#fcd34d' }}>
+              Please deploy contracts to interact with the battle arena.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="battle-arena">
         {/* Create Battle Section */}
         <div className="card">
-          <h3>Create Challenge</h3>
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Create Challenge</h3>
           
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#94a3b8' }}>
               Select Your Mech
             </label>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              {playerMechs.map((mech) => (
-                <button
-                  key={mech.id}
-                  onClick={() => setSelectedMech(mech.id)}
-                  className={`btn ${selectedMech === mech.id ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ 
-                    flexDirection: 'column', 
-                    padding: '1rem',
-                    minWidth: '100px',
-                    border: selectedMech === mech.id ? '2px solid #00d4ff' : undefined,
-                  }}
-                >
-                  <span style={{ fontSize: '2rem' }}>{MECH_TYPES[mech.mechType]}</span>
-                  <span style={{ fontSize: '0.75rem' }}>Power: {calculatePower(mech)}</span>
-                </button>
-              ))}
-            </div>
+            {isLoadingPlayerMechs ? (
+              <div style={{ textAlign: 'center', padding: '1rem' }}>
+                <Loader2 size={24} className="spin" style={{ color: '#00d4ff' }} />
+              </div>
+            ) : playerMechs.length === 0 ? (
+              <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>No mechs available. Mint some first!</p>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                {playerMechs.map((mech) => (
+                  <button
+                    key={mech.id}
+                    onClick={() => setSelectedMech(mech.id)}
+                    className={`btn ${selectedMech === mech.id ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ 
+                      flexDirection: 'column', 
+                      padding: '1rem',
+                      minWidth: '100px',
+                      border: selectedMech === mech.id ? '2px solid #00d4ff' : undefined,
+                    }}
+                  >
+                    <span style={{ fontSize: '2rem' }}>{MECH_TYPES[mech.mechType]}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Power: {calculatePower(mech)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#94a3b8' }}>
               Stake Amount (ETH)
             </label>
             <input
@@ -199,8 +310,16 @@ export default function BattleArena() {
               onChange={(e) => setStakeAmount(e.target.value)}
               className="input"
               placeholder="0.001"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '0.5rem',
+                color: '#fff',
+              }}
             />
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
               Min: {minStake ? formatEther(minStake) : '0.0001'} ETH
             </p>
           </div>
@@ -208,7 +327,7 @@ export default function BattleArena() {
           <button
             className="btn btn-primary btn-full"
             onClick={handleCreateBattle}
-            disabled={!selectedMech || isCreating}
+            disabled={!selectedMech || isCreating || !hasContracts}
           >
             {isCreating ? (
               <>
@@ -226,7 +345,7 @@ export default function BattleArena() {
 
         {/* Battle Preview with 3D */}
         <div className="card" style={{ position: 'relative', minHeight: '400px' }}>
-          <h3>Battle Preview</h3>
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Battle Preview</h3>
           
           <div style={{ 
             position: 'relative',
@@ -260,14 +379,14 @@ export default function BattleArena() {
                   style={{ marginBottom: '1rem' }}
                 />
                 <h2 style={{
-                  fontFamily: 'Russo One, sans-serif',
+                  fontFamily: "'Chakra Petch', sans-serif",
                   fontSize: '2rem',
                   color: battleResult === 'victory' ? '#00ff88' : '#ff3366',
                   textShadow: `0 0 20px ${battleResult === 'victory' ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 51, 102, 0.5)'}`,
                 }}>
                   {battleResult === 'victory' ? 'VICTORY!' : 'DEFEAT'}
                 </h2>
-                <p style={{ color: 'var(--text-secondary)' }}>
+                <p style={{ color: '#e2e8f0' }}>
                   {battleResult === 'victory' ? 'You won 0.005 ETH!' : 'Better luck next time!'}
                 </p>
               </div>
@@ -280,7 +399,7 @@ export default function BattleArena() {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               zIndex: 10,
-              fontFamily: 'Russo One, sans-serif',
+              fontFamily: "'Chakra Petch', sans-serif",
               fontSize: '2rem',
               color: '#c084fc',
               textShadow: '0 0 30px currentColor',
@@ -318,6 +437,7 @@ export default function BattleArena() {
                   justifyContent: 'center',
                   fontSize: '4rem',
                   opacity: 0.3,
+                  color: '#64748b',
                 }}>
                   ❓
                 </div>
@@ -393,21 +513,21 @@ export default function BattleArena() {
 
           {selectedMech && (
             <div className="mech-stats" style={{ maxWidth: '300px', margin: '1rem auto 0' }}>
-              <div className="mech-stat">
-                <span><Zap size={14} /> ATK</span>
-                <span>{selectedMechData?.attack}</span>
+              <div className="mech-stat" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem' }}>
+                <span style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Zap size={14} /> ATK</span>
+                <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedMechData?.attack}</span>
               </div>
-              <div className="mech-stat">
-                <span><Shield size={14} /> DEF</span>
-                <span>{selectedMechData?.defense}</span>
+              <div className="mech-stat" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem' }}>
+                <span style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Shield size={14} /> DEF</span>
+                <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedMechData?.defense}</span>
               </div>
-              <div className="mech-stat">
-                <span>SPD</span>
-                <span>{selectedMechData?.speed}</span>
+              <div className="mech-stat" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem' }}>
+                <span style={{ color: '#94a3b8' }}>SPD</span>
+                <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedMechData?.speed}</span>
               </div>
-              <div className="mech-stat">
-                <span>Power</span>
-                <span>{selectedMechData ? calculatePower(selectedMechData) : 0}</span>
+              <div className="mech-stat" style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem' }}>
+                <span style={{ color: '#94a3b8' }}>Power</span>
+                <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedMechData ? calculatePower(selectedMechData) : 0}</span>
               </div>
             </div>
           )}
@@ -416,36 +536,63 @@ export default function BattleArena() {
 
       {/* Pending Battles */}
       <div className="card pending-battles">
-        <h3>Active Challenges</h3>
+        <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Active Challenges</h3>
         
-        <div className="battle-list">
-          {activeBattles.map((battle) => (
-            <div key={battle.battleId} className="battle-item">
-              <div className="battle-item-info">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1.5rem' }}>{MECH_TYPES[battle.mechType]}</span>
-                  <span style={{ fontFamily: 'Russo One, sans-serif' }}>Mech #{battle.challengerMechId}</span>
+        {isLoadingBattles ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <Loader2 size={32} className="spin" style={{ color: '#00d4ff' }} />
+          </div>
+        ) : activeBattles.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+            <p>No active battles found.</p>
+            <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Be the first to create a challenge!</p>
+          </div>
+        ) : (
+          <div className="battle-list">
+            {activeBattles.map((battle) => (
+              <div key={battle.battleId} className="battle-item" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem',
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '0.5rem',
+                marginBottom: '0.5rem',
+              }}>
+                <div className="battle-item-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>{MECH_TYPES[battle.mechType]}</span>
+                    <span style={{ fontFamily: "'Chakra Petch', sans-serif", color: '#fff' }}>Mech #{battle.challengerMechId}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                    Challenger: {typeof battle.challenger === 'string' 
+                      ? `${battle.challenger.slice(0, 6)}...${battle.challenger.slice(-4)}` 
+                      : battle.challenger}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  Challenger: {battle.challenger}
+                
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ 
+                    fontFamily: "'Chakra Petch', sans-serif", 
+                    color: '#00ff88',
+                    fontSize: '1.125rem',
+                    fontWeight: 'bold',
+                  }}>
+                    {formatEther(battle.stakeAmount)} ETH
+                  </div>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleJoinBattle(battle.battleId, playerMechs[0]?.id)}
+                    disabled={isJoining || !hasContracts || playerMechs.length === 0}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    {isJoining ? <Loader2 size={14} className="spin" /> : 'Join Battle'}
+                  </button>
                 </div>
               </div>
-              
-              <div style={{ textAlign: 'right' }}>
-                <div className="battle-item-stake">
-                  {formatEther(battle.stakeAmount)} ETH
-                </div>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => handleJoinBattle(battle.battleId, playerMechs[0].id)}
-                  disabled={isJoining}
-                >
-                  {isJoining ? <Loader2 size={14} className="spin" /> : 'Join Battle'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <style>{`
