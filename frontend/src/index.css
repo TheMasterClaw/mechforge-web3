@@ -22,10 +22,32 @@ html {
 body {
   font-family: 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #030712;
-  color: #f8fafc;
+  color: #f8fafc !important;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Force all text to be light */
+*, *::before, *::after {
+  color: inherit;
+}
+
+p, span, div, h1, h2, h3, h4, h5, h6, label, button {
+  color: #f8fafc;
+}
+
+/* Specific overrides for better contrast */
+.hero-subtitle, .hero-description, p {
+  color: #e2e8f0 !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+.hero-stat-label, .stat-label {
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
 }
 
 #root {
