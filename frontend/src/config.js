@@ -36,7 +36,7 @@ loadContracts();
 
 export const config = getDefaultConfig({
   appName: 'MechForge',
-  projectId: 'mechforge-web3-game',
+  projectId: '00000000000000000000000000000000', // Demo project ID for testing
   chains: [baseSepolia],
   transports: {
     [baseSepolia.id]: http('https://sepolia.base.org'),
